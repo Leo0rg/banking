@@ -1,0 +1,24 @@
+{
+  "name": "banking-calculator",
+  "version": "1.0.0",
+  "description": "Banking calculator service with mortgage, car loan and other financial calculators",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "cd server && npx nodemon server.js",
+    "client": "cd client && yarn start",
+    "dev": "concurrently \"yarn server\" \"yarn client\"",
+    "install-all": "yarn && cd client && yarn && cd ../server && yarn"
+  },
+  "keywords": [
+    "banking",
+    "calculator",
+    "mortgage",
+    "loan"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
