@@ -1,6 +1,115 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+const FormContainer = styled.div`
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 1rem;
+  }
+`;
+
+const Title = styled.h2`
+  text-align: center;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const Form = styled.form`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+`;
+
+const Label = styled.label`
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+`;
+
+const Input = styled.input`
+  font-family: 'Dela Gothic One';
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 3em;
+`;
+
+const Textarea = styled.textarea`
+  font-family: 'Dela Gothic One';
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 100px;
+`;
+
+const Select = styled.select`
+  font-family: 'Dela Gothic One';
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 3em;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  
+  input {
+    margin-right: 0.5rem;
+  }
+`;
+
+const FormActions = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+`;
+
+const Button = styled.button`
+  font-family: 'Dela Gothic One';
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 3em;
+  cursor: pointer;
+  background-color: ${props => props.primary ? '#A3FF32' : 'black'};
+  color: white;
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const Alert = styled.div`
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 3em;
+  color: #fff;
+  background-color: ${props => props.success ? '#A3FF32' : '#dc3545'};
+`;
 
 const AdminCalculatorEdit = () => {
   const { id } = useParams();
@@ -31,8 +140,7 @@ const AdminCalculatorEdit = () => {
         try {
           setLoading(true);
           const res = await api.get(`/api/admin/calculators/${id}`);
-          const { name, description, fields, settings } = res.data;
-          setFormData({ name, description, fields, settings });
+          setFormData(res.data);
           setLoading(false);
         } catch (err) {
           setError('Ошибка при загрузке данных калькулятора');
@@ -85,162 +193,151 @@ const AdminCalculatorEdit = () => {
   }
   
   return (
-    <div className="admin-calculator-form">
-      <h2>{isNewCalculator ? 'Добавление калькулятора' : 'Редактирование калькулятора'}</h2>
+    <FormContainer>
+      <Title>{isNewCalculator ? 'Добавление калькулятора' : 'Редактирование калькулятора'}</Title>
       
-      {error && <div className="alert alert-danger">{error}</div>}
-      {success && <div className="alert alert-success">Калькулятор успешно сохранен</div>}
+      {error && <Alert>{error}</Alert>}
+      {success && <Alert success>Калькулятор успешно сохранен</Alert>}
       
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label">Название</label>
-          <input
+      <Form onSubmit={handleSubmit}>
+        <FormGroup className="full-width">
+          <Label>Название</Label>
+          <Input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="form-control"
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Тип калькулятора</label>
-          <select
+        <FormGroup>
+          <Label>Тип калькулятора</Label>
+          <Select
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="form-control"
             required
           >
             <option value="mortgage">Ипотека</option>
             <option value="carLoan">Автокредит</option>
             <option value="consumerLoan">Потребительский кредит</option>
             <option value="pension">Пенсионные накопления</option>
-          </select>
-        </div>
+          </Select>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Описание</label>
-          <textarea
+        <FormGroup className="full-width">
+          <Label>Описание</Label>
+          <Textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className="form-control"
             rows="3"
             required
-          ></textarea>
-        </div>
+          ></Textarea>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Процентная ставка (%)</label>
-          <input
+        <FormGroup>
+          <Label>Процентная ставка (%)</Label>
+          <Input
             type="number"
             name="interestRate"
             value={formData.interestRate}
             onChange={handleChange}
-            className="form-control"
             step="0.1"
             min="0"
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Минимальная сумма</label>
-          <input
+        <FormGroup>
+          <Label>Минимальная сумма</Label>
+          <Input
             type="number"
             name="minAmount"
             value={formData.minAmount}
             onChange={handleChange}
-            className="form-control"
             min="0"
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Максимальная сумма</label>
-          <input
+        <FormGroup>
+          <Label>Максимальная сумма</Label>
+          <Input
             type="number"
             name="maxAmount"
             value={formData.maxAmount}
             onChange={handleChange}
-            className="form-control"
             min={formData.minAmount}
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Минимальный срок (лет)</label>
-          <input
+        <FormGroup>
+          <Label>Минимальный срок (лет)</Label>
+          <Input
             type="number"
             name="minTerm"
             value={formData.minTerm}
             onChange={handleChange}
-            className="form-control"
             min="1"
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Максимальный срок (лет)</label>
-          <input
+        <FormGroup>
+          <Label>Максимальный срок (лет)</Label>
+          <Input
             type="number"
             name="maxTerm"
             value={formData.maxTerm}
             onChange={handleChange}
-            className="form-control"
             min={formData.minTerm}
             required
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <label className="form-label">Минимальный первоначальный взнос</label>
-          <input
+        <FormGroup>
+          <Label>Минимальный первоначальный взнос</Label>
+          <Input
             type="number"
             name="minDownPayment"
             value={formData.minDownPayment}
             onChange={handleChange}
-            className="form-control"
             min="0"
           />
-        </div>
+        </FormGroup>
         
-        <div className="form-group">
-          <div className="form-check">
-            <input
+        <FormGroup>
+          <CheckboxContainer>
+            <Input
               type="checkbox"
               name="isActive"
               checked={formData.isActive}
               onChange={handleChange}
-              className="form-check-input"
               id="isActive"
             />
-            <label className="form-check-label" htmlFor="isActive">
+            <Label htmlFor="isActive">
               Активен
-            </label>
-          </div>
-        </div>
+            </Label>
+          </CheckboxContainer>
+        </FormGroup>
         
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+        <FormActions>
+          <Button primary type="submit" disabled={loading}>
             {loading ? 'Сохранение...' : 'Сохранить'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="btn btn-secondary"
             onClick={() => navigate('/admin/calculators')}
             disabled={loading}
           >
             Отмена
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </FormActions>
+      </Form>
+    </FormContainer>
   );
 };
 

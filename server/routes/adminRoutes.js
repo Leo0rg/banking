@@ -29,6 +29,26 @@ router.get('/calculators', [auth, admin], async (req, res) => {
   }
 });
 
+// @route   GET api/admin/calculators/:id
+// @desc    Получить калькулятор по ID для редактирования
+// @access  Private/Admin
+router.get('/calculators/:id', [auth, admin], async (req, res) => {
+  try {
+    const calculator = await Calculator.findById(req.params.id);
+
+    if (!calculator) {
+      return res.status(404).json({ msg: 'Калькулятор не найден' });
+    }
+    res.json(calculator);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Калькулятор не найден' });
+    }
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 // @route   POST api/admin/calculators
 // @desc    Создать новый калькулятор
 // @access  Private/Admin
@@ -83,12 +103,7 @@ router.post('/calculators', [auth, admin, validateCalculator], async (req, res) 
 // @route   PUT api/admin/calculators/:id
 // @desc    Обновить калькулятор
 // @access  Private/Admin
-router.put('/calculators/:id', [auth, admin, validateCalculator], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+router.put('/calculators/:id', [auth, admin], async (req, res) => {
   const {
     name,
     type,
@@ -144,14 +159,12 @@ router.put('/calculators/:id', [auth, admin, validateCalculator], async (req, re
 // @access  Private/Admin
 router.delete('/calculators/:id', [auth, admin], async (req, res) => {
   try {
-    // Проверка существования калькулятора
-    const calculator = await Calculator.findById(req.params.id);
+    const calculator = await Calculator.findByIdAndDelete(req.params.id);
+
     if (!calculator) {
       return res.status(404).json({ msg: 'Калькулятор не найден' });
     }
 
-    // Удаление калькулятора
-    await calculator.remove();
     res.json({ msg: 'Калькулятор удален' });
   } catch (err) {
     console.error(err.message);
